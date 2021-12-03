@@ -26,10 +26,10 @@ import net.minecraft.network.play.client.C08PacketPlayerBlockPlacement
 import net.minecraft.util.BlockPos
 import net.minecraft.util.EnumFacing
 
-@ModuleInfo(name = "NoSlow", spacedName = "No Slow", category = ModuleCategory.MOVEMENT, description = "Prevent you from getting slowed down by items (swords, foods, etc.) and liquids.")
+@ModuleInfo(name = "NoSlow", spacedName = "No Slow", lsName = "NoSlowDown", spacedlsName = "No Slow Down", category = ModuleCategory.MOVEMENT, description = "Prevent you from getting slowed down by items (swords, foods, etc.) and liquids.")
 class NoSlow : Module() {
     private val msTimer = MSTimer()
-    private val modeValue = ListValue("PacketMode", arrayOf("Custom","WatchDog","Watchdog2","NCP","AAC","AAC5","None"), "None")
+    private val modeValue = ListValue("PacketMode", arrayOf("Vanilla", "Hypixel", "Hypixel2", "NCP", "AAC", "AAC5", "Custom"), "Vanilla")
     private val blockForwardMultiplier = FloatValue("BlockForwardMultiplier", 1.0F, 0.2F, 1.0F)
     private val blockStrafeMultiplier = FloatValue("BlockStrafeMultiplier", 1.0F, 0.2F, 1.0F)
     private val consumeForwardMultiplier = FloatValue("ConsumeForwardMultiplier", 1.0F, 0.2F, 1.0F)
@@ -49,7 +49,7 @@ class NoSlow : Module() {
     override val tag: String?
         get() = modeValue.get()
 
-    private fun sendPacket(event : MotionEvent, sendC07 : Boolean, sendC08 : Boolean, delay : Boolean, delayValue : Long, onGround : Boolean, watchDog : Boolean = false) {
+    private fun sendPacket(event : MotionEvent, sendC07 : Boolean, sendC08 : Boolean, delay : Boolean, delayValue : Long, onGround : Boolean, hypixel : Boolean = false) {
         val digging = C07PacketPlayerDigging(C07PacketPlayerDigging.Action.RELEASE_USE_ITEM, BlockPos(-1,-1,-1), EnumFacing.DOWN)
         val blockPlace = C08PacketPlayerBlockPlacement(mc.thePlayer.inventory.getCurrentItem())
         val blockMent = C08PacketPlayerBlockPlacement(BlockPos(-1, -1, -1), 255, mc.thePlayer.inventory.getCurrentItem(), 0f, 0f, 0f)
@@ -64,12 +64,12 @@ class NoSlow : Module() {
             }
         }
         if(sendC08 && event.eventState == EventState.POST) {
-            if(delay && msTimer.hasTimePassed(delayValue) && !watchDog) {
+            if(delay && msTimer.hasTimePassed(delayValue) && !hypixel) {
                 mc.netHandler.addToSendQueue(blockPlace)
                 msTimer.reset()
-            } else if(!delay && !watchDog) {
+            } else if(!delay && !hypixel) {
                 mc.netHandler.addToSendQueue(blockPlace)
-            } else if(watchDog) {
+            } else if(hypixel) {
                 mc.netHandler.addToSendQueue(blockMent)
             }
         }
@@ -109,7 +109,7 @@ class NoSlow : Module() {
                     sendPacket(event,true,true,false,0,false)
                 }
 
-                "watchdog" -> {
+                "hypixel" -> {
                     if(mc.thePlayer.ticksExisted % 2 == 0) {
                         sendPacket(event, true, false, false, 50, true)
                     } else {
@@ -117,7 +117,7 @@ class NoSlow : Module() {
                     }
                 }
 
-                "watchdog2" -> {
+                "hypixel2" -> {
                     if (event.eventState == EventState.PRE)
                         mc.netHandler.addToSendQueue(C07PacketPlayerDigging(C07PacketPlayerDigging.Action.RELEASE_USE_ITEM, BlockPos(-1, -1, -1), EnumFacing.DOWN))
                     else
