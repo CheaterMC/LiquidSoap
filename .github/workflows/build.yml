@@ -2,7 +2,7 @@ name: build
 
 on:
   push:
-    branches: [ backup ]
+    branches: [ master ]
 
 jobs:
   build:
@@ -25,5 +25,5 @@ jobs:
       - name: Upload build artifacts
         uses: actions/upload-artifact@v2
         with:
-          name: liquidbounceplus
-          path: build/libs/LiquidBounce-plus.jar
+          name: liquidsoap
+          path: build/libs/LiquidSoap.jar
